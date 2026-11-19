@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>iMessage AU Maker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+<div class="stage">
+  <div class="title">
+    <h1>iMessage AU Maker</h1>
+    <p>Pakai kayak aplikasi Messages beneran, lalu export layarnya.</p>
+  </div>
+
+  <div class="phone-shell"><div class="phone-scale" id="scaleBox"><div id="screen">
+    <div class="view" id="vList">
+      <div class="lscroll" id="lscroll"><div class="lin" id="lin">
+        <h1 class="ltitle">Pesan</h1>
+        <div class="pins" id="pins"></div>
+        <div id="rows"></div>
+      </div></div>
+      <div class="topfade" style="height:120px"></div><div class="botfade"></div>
+      <div class="ltop">
+        <button class="gcap glass press" type="button" id="editBtn">Edit</button>
+        <button class="gcirc glass press" type="button" id="composeBtn" aria-label="Pesan baru"></button>
+      </div>
+      <div class="lbar">
+        <label class="search glass"><span id="searchIco"></span><input type="text" id="search" placeholder="Cari" aria-label="Cari percakapan"></label>
+      </div>
+    </div>
+    <div class="view" id="vChat">
+      <div id="wall"></div>
+      <div class="thread" id="thread"><div class="tin" id="tin"></div></div>
+      <div id="fades"><div class="topfade"></div><div class="botfade"></div></div>
+      <div class="edge"></div><div class="edge bot"></div>
+      <div class="hdr">
+        <button class="back glass press" id="back" type="button" aria-label="Kembali"></button>
+        <button class="who press" id="who" type="button" aria-label="Info"><div class="av" id="av"></div><div class="namepill glass"><span id="nm"></span><span id="nmChev"></span></div></button>
+        <div class="gcirc glass vid" id="vid"></div>
+      </div>
+      <div class="focusbg" id="focusbg"></div>
+      <div id="focus"></div>
+      <div class="barwrap" id="barwrap">
+        <div class="rbar glass" id="rbar" hidden><div><b id="rbarT"></b><span id="rbarS"></span></div><button type="button" id="rbarX" aria-label="Batal"></button></div>
+        <div class="bar">
+          <button class="plus glass press" id="plus" type="button" aria-label="Lampiran"></button>
+          <div class="field glass" id="field">
+            <div class="tray" id="tray" hidden></div>
+            <div class="frow">
+              <textarea id="inp" rows="1" placeholder="iMessage" aria-label="Ketik pesan"></textarea>
+              <span class="mic" id="mic"></span>
+              <button class="send" id="send" type="button" aria-label="Kirim" hidden></button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="kb" id="kb" aria-label="Keyboard"></div>
+    </div>
+    <div class="sb" id="sb"><span id="sbTime"></span><span class="right" id="sbRight"></span></div>
+    <div class="island"></div>
+    <div id="layer"></div>
+    <div class="home"></div>
+  </div></div></div>
+
+  <div class="controls">
+    <div class="who-switch" role="group" aria-label="Ngetik sebagai">
+      <span>Ngetik sebagai · Tab buat ganti</span>
+      <div class="who-btns" id="whoBtns"></div>
+    </div>
+    <div class="tbar">
+      <button class="btn" type="button" id="kbBtn" aria-pressed="true">Keyboard iOS</button>
+      <button class="btn" type="button" id="settingsBtn">Jam & mode</button>
+      <button class="btn primary" type="button" id="exportBtn">Export PNG</button>
+    </div>
+    <p class="hint">Ketuk kolom iMessage buat ngetik · tahan atau klik kanan bubble buat highlight, reaksi, balas · ketuk area chat buat nutup keyboard</p>
+    <p class="hint warn" id="saveWarn" hidden>Fotonya kebanyakan buat disimpan di browser. Chat tetap jalan, tapi bakal hilang kalau halaman ditutup.</p>
+  </div>
+</div>
+
+<div class="ov" id="ov" hidden><div class="pop" id="pop" role="dialog"></div></div>
+<input type="file" id="fImg" accept="image/*" multiple hidden>
+<input type="file" id="fOne" accept="image/*" hidden>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+<script src="src/app.js"></script>
+</body>
+</html>
