@@ -30,6 +30,8 @@ Catatan:
 - Kalau dibuka di browser biasa, semuanya tetap jalan kayak sebelumnya. Server lokal nggak punya `api/send`, jadi tombol "Kirim ke chat" cuma muncul dan berfungsi di dalam Telegram.
 
 ## Fitur
+- iMessage tampil layar penuh. Pengaturan ada di tombol kecil di pinggir kanan.
+- Mode Edit: ada tombol buat ganti pengirim, dan status bar palsu tetap tampil biar export sama persis. Mode Pakai: bersih kayak iMessage beneran, cocok buat direkam.
 - Daftar chat: chat yang disematkan, tanda belum dibaca, pencarian, chat baru, dan group chat.
 - Keyboard iOS di dalam layar, lengkap dengan saran kata.
 - Highlight bubble (tahan atau klik kanan) buat tapback, Balas, Edit, Batalkan Kirim, dan Hapus.

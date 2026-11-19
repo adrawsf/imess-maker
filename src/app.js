@@ -76,7 +76,7 @@ let S=load();
 let as='me',tray=[],replyTo=null,editing=null,K=1,query='';
 /* di luar Telegram, script-nya tetap ke-load tapi platform-nya 'unknown' */
 const TG=window.Telegram&&Telegram.WebApp&&Telegram.WebApp.platform!=='unknown'?Telegram.WebApp:null;
-let st;function save(){clearTimeout(st);st=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S));$('saveWarn').hidden=true}catch(e){$('saveWarn').hidden=false}},300)}
+let st;function save(){clearTimeout(st);st=setTimeout(()=>{let ok=true;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){ok=false}$('saveWarn').hidden=ok;$('panelBtn').classList.toggle('warn',!ok)},300)}
 const cur=()=>S.chats.find(c=>c.id===S.open);
 const findMsg=id=>{const c=cur();return c?c.msgs.find(m=>m.id===id):null};
 const member=(c,id)=>c.group?(c.members.find(x=>x.id===id)||{name:'?',avatar:null}):{name:c.name,avatar:c.avatar};
@@ -120,12 +120,15 @@ function renderList(){
     :(pins.length?'':`<div class="lempty">${q?'Nggak ada yang cocok.':'Belum ada percakapan.<br>Ketuk ikon tulis di kanan atas buat mulai chat.'}</div>`);
   save();
 }
-function renderWho(){const c=cur();const box=$('whoBtns');
+function renderWho(){const c=cur();const box=$('whoBtns');$('whoChip').hidden=!c;
   if(!c){box.innerHTML='<span class="none">Buka chat dulu.</span>';return}
   const list=senders(c);if(!list.some(x=>x.id===as))as='me';
   box.innerHTML=list.map(x=>`<button type="button" data-as="${x.id}" aria-pressed="${as===x.id}"><i class="dot" style="background:${x.me?'var(--accent)':'#9A9AA0'}"></i><span>${esc(x.name)}</span></button>`).join('');
+  const x=list.find(y=>y.id===as);$('whoName').textContent=x.name;$('whoDot').style.background=x.me?'var(--accent)':'#9A9AA0';
 }
-$('whoBtns').addEventListener('click',e=>{const b=e.target.closest('[data-as]');if(b){setAs(b.dataset.as);inp.focus()}});
+function nextAs(back){const l=senders(cur());if(l.length){const i=l.findIndex(x=>x.id===as);setAs(l[(i+(back?l.length-1:1))%l.length].id)}}
+$('whoBtns').addEventListener('click',e=>{const b=e.target.closest('[data-as]');if(b){setAs(b.dataset.as);closePanel();if(!matchMedia('(pointer:coarse)').matches)inp.focus()}});
+$('whoChip').onclick=()=>nextAs();
 function renderChatChrome(){
   const c=cur();if(!c)return;
   let w='';if(c.wall==='custom'&&c.wallImg)w=`<div class="wall" style="background-image:url('${c.wallImg}')"></div>`;else if(WALLS[c.wall])w=`<div class="wall" style="background:${WALLS[c.wall]}"></div>`;
@@ -259,7 +262,7 @@ function send(){
 inp.addEventListener('input',()=>{syncInput();if(kbVis)renderKb()});
 inp.addEventListener('keydown',e=>{
   if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();send()}
-  else if(e.key==='Tab'){e.preventDefault();const l=senders(cur());if(l.length){const i=l.findIndex(x=>x.id===as);setAs(l[(i+(e.shiftKey?l.length-1:1))%l.length].id)}}
+  else if(e.key==='Tab'){e.preventDefault();nextAs(e.shiftKey)}
   else if(e.key==='Escape'){if(editing||replyTo)$('rbarX').click();else hideKb()}});
 inp.addEventListener('focus',()=>showKb());
 $('field').addEventListener('pointerdown',e=>{if(e.target===inp||e.target.closest('button'))return;e.preventDefault();inp.focus()});
@@ -354,7 +357,7 @@ function openCtx(line){
   const items=[['reply','Balas',I.reply]];
   if(m.text)items.push(['copy','Salin',I.copy],['edit','Edit',I.pencil]);
   items.push(['unsend','Batalkan Kirim',I.undo],['swap','Jadikan pesan '+nxt.name,I.swap],['time','Sisipkan Waktu di Atas',I.clock],['del','Hapus',I.trash]);
-  const menuH=items.length*44,barH=50,gap=10,topMin=64,botMax=852-40;
+  const menuH=items.length*44,barH=50,gap=10,topMin=64,botMax=$('screen').offsetHeight-40;
   let top=r.y;if(top-barH-gap<topMin)top=topMin+barH+gap;if(top+r.h+gap+menuH>botMax)top=Math.max(topMin+barH+gap,botMax-menuH-gap-r.h);
   const side=m.from==='me'?'right:14px':`left:${c.group?50:14}px`;
   $('screen').classList.add('ctx-on');line.style.visibility='hidden';
@@ -472,7 +475,21 @@ const ov=$('ov'),pop=$('pop');
 function openPop(html,bind){pop.innerHTML=html;ov.hidden=false;bind&&bind();const f=pop.querySelector('input,button');f&&f.focus()}
 function closePop(){ov.hidden=true;pop.innerHTML=''}
 ov.addEventListener('click',e=>{if(e.target===ov)closePop()});
-addEventListener('keydown',e=>{if(e.key==='Escape'){if(!ov.hidden)closePop();else if(L.innerHTML)closeLayer()}});
+addEventListener('keydown',e=>{if(e.key==='Escape'){if(!ov.hidden)closePop();else if(!$('panelOv').hidden)closePanel();else if(L.innerHTML)closeLayer()}});
+
+/* ---------- panel pengaturan & mode ---------- */
+function openPanel(){hideKb();inp.blur();$('panelOv').hidden=false}
+function closePanel(){$('panelOv').hidden=true}
+$('panelBtn').onclick=openPanel;$('panelX').onclick=closePanel;
+$('panelOv').addEventListener('click',e=>{if(e.target===$('panelOv'))closePanel()});
+/* Mode Edit: ada tombol ganti pengirim. Mode Pakai: bersih kayak iMessage beneran, buat dipakai atau direkam */
+function setView(v){S.view=v==='play'?'play':'edit';const play=S.view==='play';
+  document.documentElement.classList.toggle('m-play',play);
+  document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.view===S.view));
+  $('modeHint').textContent=play?'Tampilannya bersih kayak iMessage beneran, cocok buat direkam. Pengirim yang aktif tetap dipakai pas ngirim. Tombol pengaturan tetap ada di pinggir kanan, cuma dibikin samar.':'Tombol kecil di pinggir kanan buat ganti pengirim. Status bar palsu tetap tampil biar hasil export sama persis.';
+  if(TG&&TG.isVersionAtLeast&&TG.isVersionAtLeast('8.0')&&/ios|android/.test(TG.platform)){try{play?TG.requestFullscreen():TG.isFullscreen&&TG.exitFullscreen()}catch(e){}}
+  save()}
+document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{setView(b.dataset.view);closePanel()});
 $('settingsBtn').onclick=()=>openPop(`<h3>Status bar & mode</h3><div class="form">
   <div class="row2"><label>Jam<input type="text" id="oTime" maxlength="8" value="${esc(S.time)}"></label><label>Baterai %<input type="number" id="oBatt" min="1" max="100" value="${+S.batt}"></label></div>
   <label>Mode HP<select id="oMode"><option value="light">Terang</option><option value="dark">Gelap</option></select></label>
@@ -483,17 +500,28 @@ $('settingsBtn').onclick=()=>openPop(`<h3>Status bar & mode</h3><div class="form
   $('oNow').onclick=()=>{$('oTime').value=nowHM();ap()};$('oOk').onclick=closePop});
 
 /* ---------- scale ---------- */
-function fit(){const avW=Math.min(393,document.querySelector('.stage').clientWidth-20);const avH=(TG&&TG.viewportStableHeight||innerHeight)-(TG?40:90);
-  K=Math.min(1,avW/393,Math.max(.55,avH/872));
-  $('screen').style.transform=`scale(${K})`;const b=$('scaleBox');b.style.width=393*K+'px';b.style.height=852*K+'px';
-  b.style.borderRadius=44*K+'px';b.parentElement.style.borderRadius=(44*K+10)+'px'}
+/* layar HP (lebar <= 600): #screen tetap selebar 393, tingginya ngikutin layar. Layar lebar: 393×852 di tengah */
+function fit(){const vw=document.documentElement.clientWidth,vh=TG&&TG.viewportHeight||innerHeight,full=vw<=600;
+  document.documentElement.classList.toggle('full',full);
+  let H=852,pad=0;if(full){K=vw/393;
+    /* fullscreen Telegram: tombol Telegram ada di atas, jadi header iMessage digeser ke bawahnya */
+    if(TG&&TG.isFullscreen)pad=Math.max(0,Math.round(((TG.safeAreaInset||{}).top||0)+((TG.contentSafeAreaInset||{}).top||0)-50*K));
+    H=Math.max(560,Math.round((vh-pad)/K))}else K=Math.min(1,(vh-32)/852);
+  document.querySelector('.stage').style.paddingTop=pad?pad+'px':'';
+  const s=$('screen');s.style.height=H+'px';s.style.transform=`scale(${K})`;
+  const b=$('scaleBox');b.style.width=393*K+'px';b.style.height=H*K+'px';
+  const r=full?0:28*K;b.style.borderRadius=r+'px';b.parentElement.style.borderRadius=r+'px'}
 addEventListener('resize',fit);
 
 /* ---------- export ---------- */
 let lastBlob=null;
 $('exportBtn').addEventListener('click',async()=>{const b=$('exportBtn');b.disabled=true;b.textContent='Lagi bikin…';
-  const chat=$('screen').classList.contains('chat-open');const sc=chat?$('thread'):$('lscroll'),inner=chat?$('tin'):$('lin');const top=sc.scrollTop;
+  const chat=$('screen').classList.contains('chat-open');const sc=chat?$('thread'):$('lscroll'),inner=chat?$('tin'):$('lin');const top0=sc.scrollTop;
   const hadFocus=document.activeElement===inp;
+  /* tinggi layar di HP bisa beda, jadi waktu export dipaksa 852. Chat tetap nempel ke bawah kayak yang kelihatan */
+  const scr=$('screen'),H0=scr.style.height,gap=sc.scrollHeight-sc.scrollTop-sc.clientHeight;
+  scr.style.height='852px';scr.classList.add('exporting');
+  const top=chat?Math.max(0,sc.scrollHeight-sc.clientHeight-gap):top0;
   try{
     if(!window.htmlToImage)throw 0;
     sc.style.overflow='hidden';sc.scrollTop=0;inner.style.transform=`translateY(${-top}px)`;
@@ -513,7 +541,8 @@ $('exportBtn').addEventListener('click',async()=>{const b=$('exportBtn');b.disab
         go()};
       $('cp').onclick=async()=>{try{await navigator.clipboard.write([new ClipboardItem({'image/png':lastBlob})]);$('cpMsg').textContent='Tersalin'}catch(e){$('cpMsg').textContent='Nggak bisa disalin di sini. Simpan lewat klik kanan.'}}});
   }catch(e){openPop(`<h3>Export gagal</h3><div class="form"><p class="hint" style="text-align:left">Coba lagi, atau screenshot langsung layar HP-nya.</p><div class="row"><button class="sbtn" type="button" id="cl">Tutup</button></div></div>`,()=>$('cl').onclick=closePop)}
-  inner.style.transform='';sc.style.overflow='';sc.scrollTop=top;$('vList').style.visibility='';$('vChat').style.visibility='';
+  scr.style.height=H0;scr.classList.remove('exporting');
+  inner.style.transform='';sc.style.overflow='';sc.scrollTop=top0;$('vList').style.visibility='';$('vChat').style.visibility='';
   b.disabled=false;b.textContent='Export PNG'});
 
 /* ---------- Telegram Mini App ---------- */
@@ -523,9 +552,12 @@ function tgSetup(){if(!TG)return;const root=document.documentElement;root.classL
     const bg=getComputedStyle(root).getPropertyValue('--bg').trim();try{TG.setHeaderColor(bg);TG.setBackgroundColor(bg);TG.setBottomBarColor&&TG.setBottomBarColor(bg)}catch(e){}};
   theme();TG.onEvent('themeChanged',theme);TG.onEvent('viewportChanged',fit);
   /* tombol Back Telegram: tutup popup, lalu layer di HP, lalu balik ke daftar chat */
-  const sync=()=>{const on=!ov.hidden||!!L.innerHTML||$('screen').classList.contains('chat-open');try{on?TG.BackButton.show():TG.BackButton.hide()}catch(e){}};
-  TG.BackButton.onClick(()=>{if(!ov.hidden)closePop();else if(L.innerHTML)closeLayer();else if(cur())goBack();sync()});
-  const mo=new MutationObserver(sync);mo.observe(ov,{attributes:true,attributeFilter:['hidden']});mo.observe(L,{childList:true});mo.observe($('screen'),{attributes:true,attributeFilter:['class']});
+  const pov=$('panelOv');
+  const sync=()=>{const on=!ov.hidden||!pov.hidden||!!L.innerHTML||$('screen').classList.contains('chat-open');try{on?TG.BackButton.show():TG.BackButton.hide()}catch(e){}};
+  TG.BackButton.onClick(()=>{if(!ov.hidden)closePop();else if(!pov.hidden)closePanel();else if(L.innerHTML)closeLayer();else if(cur())goBack();sync()});
+  try{TG.SettingsButton.show();TG.SettingsButton.onClick(openPanel)}catch(e){}
+  ['fullscreenChanged','safeAreaChanged','contentSafeAreaChanged'].forEach(v=>TG.onEvent(v,fit));
+  const mo=new MutationObserver(sync);mo.observe(ov,{attributes:true,attributeFilter:['hidden']});mo.observe(pov,{attributes:true,attributeFilter:['hidden']});mo.observe(L,{childList:true});mo.observe($('screen'),{attributes:true,attributeFilter:['class']});
   sync()}
 /* kirim hasil export ke chat bot (lewat api/send), karena simpan gambar dari webview Telegram sering nggak bisa */
 async function tgSend(blob){let body=blob,name='au-chat-'+Date.now()+'.png';
@@ -535,6 +567,6 @@ async function tgSend(blob){let body=blob,name='au-chat-'+Date.now()+'.png';
 
 function renderAll(){renderStatus();inp.inputMode=S.kbOn?'none':'text';renderList();
   if(cur()){$('screen').classList.add('chat-open');renderChatChrome();renderThread('bottom')}else{S.open=null;$('screen').classList.remove('chat-open','walldark');renderWho()}syncInput()}
-tgSetup();renderAll();fit();
+tgSetup();setView(S.view);renderAll();fit();
 requestAnimationFrame(()=>{$('thread').scrollTop=1e6});
 })();

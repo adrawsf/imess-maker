@@ -12,12 +12,12 @@ Prinsip utamanya: user harus ngerasa kayak lagi chat beneran di aplikasi Message
 - Data disimpan di `localStorage` dengan key `imsg-au-v4` (masih bisa baca data lama dari `imsg-au-v3`).
 
 ## Struktur
-- `index.html`: markup layar HP (`#screen`), dengan view daftar chat (`#vList`), view chat (`#vChat`), keyboard (`#kb`), dan layer popup (`#layer`). Kontrol di luar HP ada di bawahnya.
+- `index.html`: markup layar HP (`#screen`), dengan view daftar chat (`#vList`), view chat (`#vChat`), keyboard (`#kb`), dan layer popup (`#layer`). Di luar layar ada tombol pinggir kanan (`#dock`: ganti pengirim + buka pengaturan) dan panel pengaturan (`#panelOv`). Dua-duanya nggak ikut ke-export.
 - `src/style.css`: token warna halaman di `:root` (terang dan gelap). Token warna HP ada di `.ph-light` dan `.ph-dark` (prefix `--p-*`, `--g-*`, `--kb-*`).
 - `src/app.js`: semua logika dalam satu IIFE.
 
 ## Konsep penting di app.js
-- **State `S`**: `{time, batt, mode, kbOn, open, chats:[...]}`.
+- **State `S`**: `{time, batt, mode, kbOn, view, open, chats:[...]}`. `view` itu `'edit'` atau `'play'` (Mode Pakai), diatur lewat `setView()` yang ngasih class `m-play` ke `<html>`.
   - Tiap chat punya: `id, name, avatar, group, members[], pinned, unread, wall, wallImg, status, statusText, typing, silenced, sms, at, msgs[]`.
   - Tiap pesan punya: `id, from ('me'|'them'|'time'), text, t, who (id anggota grup), imgs[], voice{dur}, react, replyTo, edited, unsent`.
 - **Render**:
@@ -30,8 +30,8 @@ Prinsip utamanya: user harus ngerasa kayak lagi chat beneran di aplikasi Message
 - **Pengelompokan bubble**: pesan berurutan dari pengirim yang sama dihitung satu kelompok. Ekor bubble (`I.tail`) cuma muncul di pesan terakhir tiap kelompok.
 - **Pengirim aktif `as`**: bisa `'me'`, `'them'`, atau id anggota grup. Diganti lewat Tab atau tombol di bawah HP.
 - **Layer di dalam HP** (`sheet()`, `openCtx()`, menu plus) dirender ke `#layer`, jadi ikut ke-export. Popup halaman (`openPop()`) ada di luar HP dan nggak ikut ke-export.
-- **Skala layar**: `#screen` selalu 393×852 lalu di-`scale` pakai variabel `K`. Kalau menghitung posisi, pakai `rel(el)`, yang udah mengoreksi skala.
-- **Export**: posisi scroll diganti sementara jadi `translateY`, karena `html-to-image` nggak ikut posisi scroll.
+- **Skala layar**: `#screen` selalu selebar 393 lalu di-`scale` pakai variabel `K`. Di layar ≤600px (class `full` di `<html>`), layarnya penuh dan tingginya ngikutin layar HP. Di layar lebar tingginya 852 dan ada di tengah. Jangan anggap tingginya selalu 852; pakai `$('screen').offsetHeight`. Kalau menghitung posisi, pakai `rel(el)`, yang udah mengoreksi skala.
+- **Export**: tinggi layar dipaksa 852 sementara (chat tetap nempel ke bawah), class `exporting` dipasang biar status bar palsu tetap muncul di Mode Pakai, dan posisi scroll diganti sementara jadi `translateY`, karena `html-to-image` nggak ikut posisi scroll.
 
 ## Konvensi
 - Semua teks UI pakai Bahasa Indonesia santai, dengan istilah yang sama kayak iOS versi Indonesia (Balas, Salin, Batalkan Kirim, Dibaca, Terkirim).

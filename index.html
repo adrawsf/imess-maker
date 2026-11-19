@@ -10,11 +10,6 @@
 </head>
 <body>
 <div class="stage">
-  <div class="title">
-    <h1>iMessage AU Maker</h1>
-    <p>Pakai kayak aplikasi Messages beneran, lalu export layarnya.</p>
-  </div>
-
   <div class="phone-shell"><div class="phone-scale" id="scaleBox"><div id="screen">
     <div class="view" id="vList">
       <div class="lscroll" id="lscroll"><div class="lin" id="lin">
@@ -64,7 +59,20 @@
     <div id="layer"></div>
     <div class="home"></div>
   </div></div></div>
+</div>
 
+<div class="dock" id="dock">
+  <button class="dk-who" id="whoChip" type="button" aria-label="Ganti pengirim"><i class="dot" id="whoDot"></i><span id="whoName"></span></button>
+  <button class="dk-btn" id="panelBtn" type="button" aria-label="Pengaturan"><svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 5h8M15 5h2M3 10h2M9 10h8M3 15h10M17 15h0"/><circle cx="13" cy="5" r="2"/><circle cx="7" cy="10" r="2"/><circle cx="15" cy="15" r="2"/></svg></button>
+</div>
+
+<div class="panel-ov" id="panelOv" hidden><div class="panel" id="panel" role="dialog" aria-label="Pengaturan">
+  <div class="phead"><b>Pengaturan</b><button class="sbtn" type="button" id="panelX">Tutup</button></div>
+  <div class="seg" role="group" aria-label="Mode">
+    <button type="button" data-view="edit">Mode Edit</button>
+    <button type="button" data-view="play">Mode Pakai</button>
+  </div>
+  <p class="hint" id="modeHint"></p>
   <div class="controls">
     <div class="who-switch" role="group" aria-label="Ngetik sebagai">
       <span>Ngetik sebagai · Tab buat ganti</span>
@@ -78,7 +86,7 @@
     <p class="hint">Ketuk kolom iMessage buat ngetik · tahan atau klik kanan bubble buat highlight, reaksi, balas · ketuk area chat buat nutup keyboard</p>
     <p class="hint warn" id="saveWarn" hidden>Fotonya kebanyakan buat disimpan di browser. Chat tetap jalan, tapi bakal hilang kalau halaman ditutup.</p>
   </div>
-</div>
+</div></div>
 
 <div class="ov" id="ov" hidden><div class="pop" id="pop" role="dialog"></div></div>
 <input type="file" id="fImg" accept="image/*" multiple hidden>
